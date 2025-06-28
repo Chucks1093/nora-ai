@@ -1,17 +1,9 @@
-import { sessionService } from "@/services/session.service";
 import { LogOut } from "lucide-react";
-import { useEffect } from "react";
+
 import { useNavigate } from "react-router";
 
 function Header() {
 	const naviagate = useNavigate();
-
-	useEffect(() => {
-		const pingServer = () => {
-			sessionService.pingServer();
-		};
-		pingServer();
-	}, []);
 
 	return (
 		<header className='absolute flex items-center justify-between w-full max-w-6xl  md:top-[8vh] top-[5vh]  left-1/2 -translate-x-1/2 px-4 md:px-6 lg:px-0 z-20'>

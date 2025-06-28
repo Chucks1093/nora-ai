@@ -17,6 +17,7 @@ export interface Session {
 	replica_id: string;
 	personal_id: string;
 	tutor_image: string;
+	conversation_id: string;
 	title: string;
 	note?: string;
 }
@@ -74,6 +75,7 @@ class SessionService {
 				tutor_image: input.tutor_image,
 				title: input.title,
 				description: input.description,
+				conversation_id: input.conversation_id,
 			},
 		]);
 

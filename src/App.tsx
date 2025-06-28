@@ -10,9 +10,9 @@ import AuthDialog from "./pages/AuthDialog";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import CreateSession from "./pages/CreateSession";
 import SessionHistory from "./pages/SessionHistory";
-import SessionCall from "./pages/SessionCall";
 import { requireAuth } from "./scripts/auth.loaders";
 import { getCallDetails } from "./scripts/session.loader";
+import SessionCallPage from "./pages/SessionCallPage";
 
 const router = createBrowserRouter([
 	{
@@ -59,7 +59,7 @@ const router = createBrowserRouter([
 	{
 		path: "/session/call/:id",
 		loader: getCallDetails,
-		element: <SessionCall />,
+		element: <SessionCallPage />,
 	},
 ]);
 

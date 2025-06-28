@@ -105,8 +105,8 @@ function Waitlist() {
 				</div>
 				<div className='flex items-center space-x-4 mt-7 absolute left-1/2 -translate-x-1/2 bottom-[20%] md:bottom-10'>
 					<a
-						href='https://x.com/noratutor'
-            target="_blank"
+						href='https://noratutor.xyz'
+						target='_blank'
 						className='p-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-full hover:bg-opacity-30 transition-all duration-200 group'>
 						<img
 							src='/icons/x.svg'
