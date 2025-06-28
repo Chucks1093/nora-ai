@@ -224,7 +224,7 @@ const CreateSession = () => {
 						<Label className='block text-lg font-semibold text-gray-800 mb-4'>
 							Select Your Tutor
 						</Label>
-						<div className='grid grid-cols-3 gap-4'>
+						<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
 							{availabletutors.map((tutor, i) => (
 								<motion.div
 									key={tutor.replica_id}
@@ -266,7 +266,7 @@ const CreateSession = () => {
 							When would you like to start?
 						</Label>
 						<div className='space-y-4'>
-							<div className='flex gap-4'>
+							<div className='flex gap-4 md:flex-row flex-col'>
 								<button
 									type='button'
 									onClick={() => setSessionTiming("immediate")}

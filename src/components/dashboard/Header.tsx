@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Search, LogOut, ChevronDown } from "lucide-react";
+import { Search, LogOut, ChevronDown, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/hooks/dashboard/useProfileStore";
 import { authService } from "@/services/auth.service";
@@ -18,9 +18,15 @@ import { useNavigate } from "react-router";
 
 interface HeaderProps {
 	className?: string;
+	onMenuClick?: () => void;
+	showMenuButton?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = (props) => {
+const Header: React.FC<HeaderProps> = ({
+	className,
+	onMenuClick,
+	showMenuButton = false,
+}) => {
 	// Internal state
 	const [searchQuery, setSearchQuery] = useState("");
 	const { profile, clearProfile } = useProfileStore();
@@ -49,8 +55,6 @@ const Header: React.FC<HeaderProps> = (props) => {
 		await authService.signOut();
 		clearProfile();
 		navigate("/");
-
-		// Add your logout logic here
 	};
 
 	const getInitials = (name: string) => {
@@ -70,32 +74,65 @@ const Header: React.FC<HeaderProps> = (props) => {
 			<TooltipProvider>
 				<header
 					className={cn(
-						"h-16 bg-white border-b border-gray-200 flex items-center justify-between w-full px-[3%] mx-auto",
-						props.className
+						"h-16 bg-white border-b border-gray-200 flex items-center justify-between w-full px-4 lg:px-[3%]",
+						className
 					)}>
-					{/* Center Section - Search */}
-					<div className='flex-1 max-w-lg'>
-						<div className='relative'>
-							<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
-							<Input
-								type='text'
-								placeholder='Search sessions, notes, or topics...'
-								value={searchQuery}
-								onChange={handleSearchChange}
-								onKeyPress={handleKeyPress}
-								className='pl-10 pr-4 py-2 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all focus-visible:ring-blue-500'
-							/>
+					{/* Left Section - Mobile Menu + Search */}
+					<div className='flex items-center gap-4 flex-1'>
+						{/* Mobile Menu Button */}
+						{showMenuButton && (
+							<Button
+								variant='ghost'
+								size='sm'
+								className='lg:hidden p-2'
+								onClick={onMenuClick}>
+								<Menu className='h-5 w-5' />
+							</Button>
+						)}
+
+						{/* Logo - Hidden on mobile when search is active */}
+						<div className='flex items-center gap-3 lg:hidden'>
+							<div className='bg-blue-500 flex items-center justify-center p-2 rounded-full'>
+								<img
+									src='/icons/logo.png'
+									alt='Nora AI Logo'
+									className='h-4 w-4'
+									onError={(e) => {
+										e.currentTarget.style.display = "none";
+										e.currentTarget.parentElement!.innerHTML =
+											'<span class="text-white font-bold text-sm">N</span>';
+									}}
+								/>
+							</div>
+							<h2 className='font-semibold text-lg text-gray-900 font-montserrat hidden sm:block'>
+								Nora AI
+							</h2>
+						</div>
+
+						{/* Search */}
+						<div className='flex-1 max-w-lg hidden md:block'>
+							<div className='relative '>
+								<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+								<Input
+									type='text'
+									placeholder='Search sessions, notes, or topics...'
+									value={searchQuery}
+									onChange={handleSearchChange}
+									onKeyPress={handleKeyPress}
+									className='pl-10 pr-4 py-2 w-full bg-gray-50 border-gray-200 focus:bg-white transition-all focus-visible:ring-blue-500'
+								/>
+							</div>
 						</div>
 					</div>
 
 					{/* Right Section - User */}
-					<div className='flex items-center'>
+					<div className='flex items-center ml-4'>
 						{/* User Dropdown */}
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button
 									variant='ghost'
-									className='flex items-center px-3 py-2 h-auto bg-white border border-gray-200 rounded-full hover:border-gray-300 transition-all duration-200'>
+									className='flex items-center gap-2 px-2 sm:px-3 py-2 h-auto bg-white border border-gray-200 rounded-full hover:border-gray-300 transition-all duration-200'>
 									<Avatar className='w-8 h-8'>
 										<AvatarImage
 											src={image}
@@ -108,7 +145,7 @@ const Header: React.FC<HeaderProps> = (props) => {
 									<span className='text-sm font-medium text-gray-700 hidden sm:block'>
 										{profile?.username.split(" ")[0]}
 									</span>
-									<ChevronDown className='w-4 h-4 text-gray-500' />
+									<ChevronDown className='w-4 h-4 text-gray-500 hidden sm:block' />
 								</Button>
 							</DropdownMenuTrigger>
 
@@ -135,8 +172,6 @@ const Header: React.FC<HeaderProps> = (props) => {
 										</p>
 									</div>
 								</div>
-
-								<DropdownMenuSeparator className='my-2' />
 
 								<DropdownMenuSeparator className='my-2' />
 

@@ -12,6 +12,7 @@ import CreateSession from "./pages/CreateSession";
 import SessionHistory from "./pages/SessionHistory";
 import SessionCall from "./pages/SessionCall";
 import { requireAuth } from "./scripts/auth.loaders";
+import { getCallDetails } from "./scripts/session.loader";
 
 const router = createBrowserRouter([
 	{
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
 	},
 	{
 		path: "/session/call/:id",
+		loader: getCallDetails,
 		element: <SessionCall />,
 	},
 ]);

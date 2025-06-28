@@ -65,7 +65,7 @@ function Footer() {
 						<motion.a
 							href='https://x.com/noratutor'
 							target='_blank'
-							className='bg-app-primary text-white font-montserrat px-4 py-2 rounded-lg block mx-auto'
+							className='bg-app-primary text-white font-montserrat px-4 py-2 rounded-lg block mx-auto w-fit'
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 							transition={{

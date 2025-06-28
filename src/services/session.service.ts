@@ -95,6 +95,25 @@ class SessionService {
 		if (error) throw error;
 		return data as Session[];
 	}
+
+	async getSessionByConversationId(
+		conversationId: string
+	): Promise<Session | null> {
+		const { data, error } = await this.supabase
+			.from("sessions")
+			.select("*")
+			.eq("conversation_id", conversationId)
+			.single();
+
+		if (error) {
+			if (error.code === "PGRST116") {
+				// No rows returned
+				return null;
+			}
+			throw error;
+		}
+		return data as Session;
+	}
 }
 
 export const sessionService = new SessionService();
