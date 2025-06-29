@@ -59,7 +59,6 @@ const useCall = (): UseCallReturn => {
           replica_id: replica_id,
           persona_id: persona_id,
           conversational_context: conversationContext,
-          custom_greeting: "What's going on?",
           properties: {
             max_call_duration: 120,
             participant_left_timeout: 5,
