@@ -135,6 +135,8 @@ const CreateSession = () => {
 					"Only Authenticated user can create sessions"
 				);
 
+			if (!result) return showToast.error("Error scheduling call");
+
 			let dateTime: string | null = null;
 
 			if (sessionTiming !== "immediate") {
@@ -156,14 +158,19 @@ const CreateSession = () => {
 				replica_id: availabletutors[selectedTutorIndex].replica_id,
 				personal_id: availabletutors[selectedTutorIndex].personal_id,
 				tutor_image: availabletutors[selectedTutorIndex].image,
+				tutor_personality: availabletutors[selectedTutorIndex].personality,
 				url: result.conversation_url,
 				title: title,
 				time: dateTime,
 				description: description,
+				conversation_id: result.conversation_id,
 			});
 			if (result.conversation_url) {
 				if (sessionTiming === "immediate") {
-					navigate(`/session/call/${result.conversation_id}`, {
+					showToast.success(
+						`Starting Call with ${availabletutors[selectedTutorIndex].name}`
+					);
+					navigate(`/session/call/${result.conversation_id}?incall=true`, {
 						state: { conversationUrl: result.conversation_url },
 					});
 				} else {

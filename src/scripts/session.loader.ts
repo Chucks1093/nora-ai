@@ -5,7 +5,7 @@ import { Session } from "@/services/session.service";
 
 const USER = {
 	success: true,
-	authenticated: false,
+	authenticated: true,
 	id: "e45cf928-acbb-4ffd-836e-17912c1de072",
 	email: "aniokesebastian@gmail.com",
 	updated_at: "2025-06-28T08:43:38.372+00:00",
@@ -14,7 +14,7 @@ const USER = {
 	username: "aniokesebastian",
 };
 
-const SESSIONDATA = {
+const SESSIONDATA: Session = {
 	id: "7f27ab68-5ccc-4889-86b7-4a2adf14846a",
 	created_at: "2025-06-28T15:30:35.987287+00:00",
 	user_id: "75acf425-06da-4435-a2da-b42e54655665",
@@ -22,6 +22,7 @@ const SESSIONDATA = {
 	time: null,
 	duration: 5,
 	url: "https://tavus.daily.co/ccfcf79c3fbdf49e",
+	tutor_personality: "Builds you up slowly",
 	context: "Calculus",
 	tutor: "Nora",
 	replica_id: "r3a47ce45e68",
@@ -29,7 +30,6 @@ const SESSIONDATA = {
 	title: "Calculus Concepts",
 	personal_id: "p2f164e98f54",
 	description: "Learn fundamental calculus concepts and techniques.",
-	notes: null,
 	conversation_id: "ccfcf79c3fbdf49e",
 };
 

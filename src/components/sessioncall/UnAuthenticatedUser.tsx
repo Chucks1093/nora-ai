@@ -10,10 +10,10 @@ function UnAuthenticatedUser() {
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
-			className='w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center py-12 ring-8 ring-offset-white/95 z-30'>
+			className='w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center py-14 ring-8 ring-offset-white/95 z-30'>
 			<div className='mb-6'>
 				<motion.div
-					className='w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm ring-8 ring-blue-100/40'
+					className='w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm ring-8 ring-blue-100/40'
 					initial={{ scale: 0.8 }}
 					animate={{
 						scale: [0.8, 1.1, 1],
@@ -38,13 +38,13 @@ function UnAuthenticatedUser() {
 				<h1 className='text-2xl font-semibold text-gray-700 mb-3 font-montserrat'>
 					Join Learning Session
 				</h1>
-				<p className='text-gray-500 w-[90%] mx-auto text-sm px-2'>
+				<p className='text-gray-500 w-[90%] mx-auto text-md '>
 					Sign in or Register to join this interactive tutoring session
 					with Nora AI .
 				</p>
 			</div>
 
-			<div className='space-y-3 mt-12'>
+			<div className='space-y-5 mt-12'>
 				<button
 					onClick={() => navigate("/dashboard/session/create")}
 					className='w-fit px-6 py-3 rounded-lg mx-auto bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-3 text-app-offwhite'>
@@ -55,7 +55,7 @@ function UnAuthenticatedUser() {
 				</button>
 				<button
 					onClick={() => navigate("/dashboard")}
-					className='w-full bg-transparent text-gray-800 underline text-sm'>
+					className='w-fit bg-transparent text-gray-500 underline text-sm'>
 					Create Account
 				</button>
 			</div>

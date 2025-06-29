@@ -41,7 +41,7 @@ const useCall = (): UseCallReturn => {
         properties: {
           max_call_duration: 120,
           participant_left_timeout: 5,
-          participant_absent_timeout: 10,
+          participant_absent_timeout: 5,
           language: 'english',
         },
       }),

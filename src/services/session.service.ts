@@ -4,7 +4,7 @@ import { env } from "@/utils/env.utils";
 import { SessionStatus } from "@/components/dashboard/SessionStatusBadge";
 
 export interface Session {
-	id: string | null;
+	id?: string | null;
 	created_at?: string;
 	description?: string;
 	user_id: string;
@@ -14,11 +14,12 @@ export interface Session {
 	url: string;
 	context: string;
 	tutor: string;
+	tutor_personality: string;
 	replica_id: string;
 	personal_id: string;
 	tutor_image: string;
-	conversation_id: string;
 	title: string;
+	conversation_id: string;
 	note?: string;
 }
 
@@ -81,10 +82,6 @@ class SessionService {
 
 		if (error) throw error;
 		return data;
-	}
-
-	async pingServer() {
-		fetch(`${this.API_BASE_URL}/ping`);
 	}
 
 	async getSessionsByUserId(userId: string): Promise<Session[]> {

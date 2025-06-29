@@ -27,7 +27,7 @@ export default function useTranscript(
 
       // Will soon set up Backend to have a permanent ws endpoint
       const websocket = new WebSocket(
-        'wss://nora-backend-kjwh.onrender.com/transcript'
+        `wss://${import.meta.env.VITE_API_BASE_URL}/transcript`
       );
       websockRef.current = websocket;
 
