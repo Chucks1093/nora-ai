@@ -62,7 +62,7 @@ const SessionCardSkeleton: React.FC<{ index: number }> = ({ index }) => {
 };
 
 // Grid Skeleton
-const SessionGridSkeleton: React.FC<{ count?: number }> = ({ count = 9 }) => {
+const SessionGridSkeleton: React.FC<{ count?: number }> = ({ count = 4 }) => {
 	return (
 		<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 			{Array.from({ length: count }, (_, index) => (
@@ -212,7 +212,7 @@ const SessionPaginationSkeleton: React.FC = () => {
 const SessionTableSkeleton: React.FC<{
 	viewMode?: "grid" | "list";
 	itemCount?: number;
-}> = ({ viewMode = "list", itemCount = 8 }) => {
+}> = ({ viewMode = "list", itemCount = 4 }) => {
 	return (
 		<div>
 			{/* Filters Skeleton */}

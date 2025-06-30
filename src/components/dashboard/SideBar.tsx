@@ -2,15 +2,11 @@ import React from "react";
 import {
 	Home,
 	Video,
-	Library,
-	Calendar,
 	FileText,
 	MessageSquare,
-	Clock,
 	BookOpen,
-	BarChart3,
-	Bell,
 	LogOut,
+	CalendarPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink, useNavigate } from "react-router";
@@ -60,16 +56,10 @@ const navigationData: NavigationSection[] = [
 				link: "/dashboard/session/history",
 			},
 			{
-				icon: Calendar,
-				label: "Study Schedule",
+				icon: CalendarPlus,
+				label: "Schedule Session",
 				id: "study-schedule",
-				link: "/study-schedule",
-			},
-			{
-				icon: Clock,
-				label: "Session Timer",
-				id: "session-timer",
-				link: "/session-timer",
+				link: "/dashboard/session/scheduled",
 			},
 		],
 	},
@@ -80,36 +70,13 @@ const navigationData: NavigationSection[] = [
 				icon: FileText,
 				label: "Session Notes",
 				id: "session-notes",
-				link: "/session-notes",
-			},
-			{
-				icon: Library,
-				label: "Transcripts",
-				id: "transcripts",
-				link: "/transcripts",
+				link: "/dashboard/session/notes",
 			},
 			{
 				icon: BookOpen,
 				label: "Study Materials",
 				id: "study-materials",
-				link: "/study-materials",
-			},
-		],
-	},
-	{
-		title: "PROGRESS",
-		items: [
-			{
-				icon: BarChart3,
-				label: "Learning Analytics",
-				id: "analytics",
-				link: "/analytics",
-			},
-			{
-				icon: Bell,
-				label: "Reminders",
-				id: "reminders",
-				link: "/reminders",
+				link: "/dashboard/session/materials",
 			},
 		],
 	},
@@ -120,6 +87,7 @@ interface SideBarItemProps {
 	label: string;
 	link: string;
 	isNew?: boolean;
+	onNavigate?: () => void;
 }
 
 const SideBarItem: React.FC<SideBarItemProps> = ({
@@ -127,11 +95,13 @@ const SideBarItem: React.FC<SideBarItemProps> = ({
 	label,
 	link,
 	isNew = false,
+	onNavigate,
 }) => {
 	return (
 		<NavLink
 			end
 			to={link}
+			onClick={onNavigate}
 			className={({ isActive }) =>
 				`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 group ${
 					isActive ? "bg-blue-50" : "text-gray-700 hover:bg-gray-100"
@@ -181,9 +151,10 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => {
 
 interface SideBarProps {
 	className?: string;
+	onNavigate?: () => void;
 }
 
-const SideBar: React.FC<SideBarProps> = (props) => {
+const SideBar: React.FC<SideBarProps> = ({ className, onNavigate }) => {
 	const { clearProfile } = useProfileStore();
 	const navigate = useNavigate();
 
@@ -192,13 +163,15 @@ const SideBar: React.FC<SideBarProps> = (props) => {
 		await authService.signOut();
 		clearProfile();
 		navigate("/");
+		// Close sidebar on mobile after logout
+		onNavigate?.();
 	};
 
 	return (
 		<aside
 			className={cn(
-				"w-64  border-gray-200 h-screen bg-white flex flex-col z-10",
-				props.className
+				"w-64 border-gray-200 h-screen bg-white flex flex-col z-10 shadow-lg lg:shadow-none",
+				className
 			)}>
 			{/* Brand Header */}
 			<div className='h-16 flex items-center gap-3 px-4 border-b border-gray-200'>
@@ -221,8 +194,8 @@ const SideBar: React.FC<SideBarProps> = (props) => {
 			</div>
 
 			{/* Navigation Content */}
-			<div className='flex-1 overflow-y-auto py-4 px-2 border-r '>
-				<nav className='space-y-6 border-none'>
+			<div className='flex-1 overflow-y-auto py-4 px-2 border-r border-gray-200'>
+				<nav className='space-y-6'>
 					{navigationData.map((section, sectionIndex) => (
 						<div key={sectionIndex}>
 							<SectionHeader title={section.title} />
@@ -234,6 +207,7 @@ const SideBar: React.FC<SideBarProps> = (props) => {
 										label={item.label}
 										link={item.link}
 										isNew={item.isNew}
+										onNavigate={onNavigate}
 									/>
 								))}
 							</div>
@@ -243,7 +217,7 @@ const SideBar: React.FC<SideBarProps> = (props) => {
 			</div>
 
 			{/* User Profile */}
-			<div className='p-4 border-t border-r'>
+			<div className='p-4 border-t border-r border-gray-200'>
 				<button
 					onClick={handleLogout}
 					className='flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 group text-gray-700 hover:bg-gray-100 w-full'>
