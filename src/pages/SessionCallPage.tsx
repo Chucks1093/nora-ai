@@ -7,6 +7,7 @@ import CallEntry from "@/components/sessioncall/CallEntry";
 import { Session } from "@/services/session.service";
 import { Profile } from "@/hooks/dashboard/useProfileStore";
 import SessionCallOverlay from "@/components/sessioncall/SessionCallOverlay";
+
 interface LoaderData {
 	user: Profile;
 	session?: Session;
@@ -20,15 +21,13 @@ const SessionCallPage: React.FC = () => {
 		return searchParams.get("incall") === "true";
 	});
 
-	if (!loaderData.user.authenticated) {
+	if (!loaderData?.user?.authenticated) {
 		return (
 			<SessionCallOverlay>
 				<UnAuthenticatedUser />
 			</SessionCallOverlay>
 		);
 	}
-
-	console.log(loaderData);
 
 	// Invalid Session Scenario
 	if (!loaderData.session || !loaderData.isValid || !loaderData.isValid) {

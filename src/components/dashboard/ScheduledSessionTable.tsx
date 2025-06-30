@@ -436,7 +436,7 @@ const SessionTableFilters: React.FC<{
 };
 
 // Updated SessionTable component with mobile-first approach
-function SessionTable() {
+function ScheduledSessionTable() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const { profile } = useProfileStore();
 	const [itemsPerPage] = useState(4);
@@ -465,7 +465,7 @@ function SessionTable() {
 
 			try {
 				setIsLoading(true);
-				const fetchedSessions = await sessionService.getSessionsByUserId(
+				const fetchedSessions = await sessionService.getScheduledSessions(
 					profile.id
 				);
 				setSessions(fetchedSessions);
@@ -673,4 +673,4 @@ function SessionTable() {
 	);
 }
 
-export default SessionTable;
+export default ScheduledSessionTable;

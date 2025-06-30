@@ -17,6 +17,13 @@ import showToast from "@/utils/toast.utils";
 import { env } from "@/utils/env.utils";
 import { sessionService } from "@/services/session.service";
 import { useProfileStore } from "@/hooks/dashboard/useProfileStore";
+import LearningMaterialsComponent, {
+	LearningMaterials,
+} from "@/components/dashboard/LearningMaterials";
+import LearningMaterialsSummary from "@/components/dashboard/LearningMaterialsSummary";
+import { customAlphabet } from "nanoid";
+
+const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 15);
 
 const availabletutors = [
 	{
@@ -60,6 +67,12 @@ const CreateSession = () => {
 	const { error, makeCall } = useCall();
 	const [isLoading, setIsLoading] = useState(false);
 
+	const [materials, setMaterials] = useState<LearningMaterials>({
+		files: [],
+		urls: [],
+		textContent: "",
+	});
+
 	// Get today's date in YYYY-MM-DD format for min date
 	const today = new Date().toISOString().split("T")[0];
 
@@ -89,13 +102,11 @@ const CreateSession = () => {
 		// Only validate if selected date is today
 		if (scheduledDate === today) {
 			const now = new Date();
-			const tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
+			const tenMinutesFromNow = new Date(now.getTime() + 3 * 60 * 1000);
 			const selectedDateTime = new Date(`${scheduledDate}T${selectedTime}`);
 
 			if (selectedDateTime < tenMinutesFromNow) {
-				showToast.error(
-					"Please select a time at least 10 minutes from now"
-				);
+				showToast.error("Please select a time at least 3 minutes from now");
 				return; // Don't set the time
 			}
 		}
@@ -103,13 +114,85 @@ const CreateSession = () => {
 		setScheduledTime(selectedTime);
 	};
 
-	const handleCreateSession = async () => {
-		if (!conversationContext.trim()) {
-			showToast.error("Please provide a learning context");
+	const handleSubmitSession = () => {
+		if (!materials.textContent)
+			return showToast.error("You need add a context to make this call");
+
+		if (sessionTiming == "immediate") {
+			handleCreateSession();
+		}
+		if (sessionTiming == "scheduled") {
+			handleScheduleSession();
+		}
+	};
+
+	const handleScheduleSession = async () => {
+		if (!profile)
+			return showToast.error("Only Authenticated user can create sessions");
+
+		if (!scheduledDate || !scheduledTime) {
+			showToast.error(
+				"Please select both date and time for scheduled session"
+			);
 			return;
 		}
 
-		showToast.message("working");
+		const dateTimeString = `${scheduledDate}T${scheduledTime}`;
+		const isoDate = new Date(dateTimeString);
+		const scheduledPeriod = isoDate.toISOString();
+
+		try {
+			setIsLoading(true);
+			showToast.loading("Generating lession context ");
+			let generatedContext: string = materials.textContent; // Default to materials.textContent
+
+			if (materials.textContent && materials.files.length == 0) {
+				const { conversational_context } = await sessionService.getTitle(
+					materials.textContent
+				);
+				generatedContext = conversational_context;
+			}
+
+			if (materials.textContent && materials.files.length) {
+				showToast.loading("Extracting context from document");
+				const { generated_context } =
+					await sessionService.getContextFromFile(
+						materials.textContent,
+						materials.files[0].file
+					);
+				generatedContext = generated_context;
+			}
+			showToast.loading("Scheduling your session");
+
+			const data = sessionService.scheduleSession({
+				userId: profile.id,
+				duration: Number(sessionDuration),
+				conversation_context: generatedContext,
+				tutor: availabletutors[selectedTutorIndex].name,
+				replica_id: availabletutors[selectedTutorIndex].replica_id,
+				tutor_image: availabletutors[selectedTutorIndex].image,
+				personal_id: availabletutors[selectedTutorIndex].personal_id,
+				tutor_personality: availabletutors[selectedTutorIndex].personality,
+				scheduled_time: scheduledPeriod,
+			});
+
+			console.log(data);
+			showToast.success(
+				`Session scheduled for ${scheduledDate} at ${scheduledTime}. You'll receive a reminder!`
+			);
+		} catch (error) {
+			console.log(error);
+			showToast.error("Failed to schedule session");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleCreateSession = async () => {
+		if (!materials.textContent.trim()) {
+			showToast.error("Please provide a learning context");
+			return;
+		}
 
 		if (sessionTiming === "scheduled") {
 			if (!scheduledDate || !scheduledTime) {
@@ -122,38 +205,45 @@ const CreateSession = () => {
 
 		try {
 			setIsLoading(true);
+			showToast.loading("Refining learner context ");
+			let generatedContext = materials.textContent;
 			const { title, description } = await sessionService.getTitle(
-				conversationContext
+				materials.textContent
 			);
+
+			if (materials.files.length > 0) {
+				showToast.loading("Extracting Context from document");
+				const { generated_context } =
+					await sessionService.getContextFromFile(
+						materials.textContent,
+						materials.files[0].file
+					);
+
+				generatedContext = generated_context;
+			}
+
+			showToast.loading("Creating Session..");
+
 			const result = await makeCall(
-				conversationContext,
+				generatedContext,
 				availabletutors[selectedTutorIndex].replica_id,
-				availabletutors[selectedTutorIndex].personal_id
+				availabletutors[selectedTutorIndex].personal_id,
+				Number(sessionDuration) * 60
 			);
 			if (!profile)
 				return showToast.error(
 					"Only Authenticated user can create sessions"
 				);
 
-			if (!result) return showToast.error("Error scheduling call");
-
-			let dateTime: string | null = null;
-
-			if (sessionTiming !== "immediate") {
-				const dateTimeString = `${scheduledDate}T${scheduledTime}`;
-				const isoDate = new Date(dateTimeString);
-				dateTime = isoDate.toDateString();
-			}
-
-			const status =
-				sessionTiming == "immediate" ? "IN_PROGRESS" : "SCHEDULED";
+			if (!result) return showToast.error("Error Creating call");
+			const callId = nanoid();
 
 			await sessionService.createsession({
 				id: result.conversation_id,
 				user_id: profile.id,
-				status: status,
+				status: "IN_PROGRESS",
 				duration: Number(sessionDuration),
-				context: conversationContext,
+				context: generatedContext,
 				tutor: availabletutors[selectedTutorIndex].name,
 				replica_id: availabletutors[selectedTutorIndex].replica_id,
 				personal_id: availabletutors[selectedTutorIndex].personal_id,
@@ -161,27 +251,17 @@ const CreateSession = () => {
 				tutor_personality: availabletutors[selectedTutorIndex].personality,
 				url: result.conversation_url,
 				title: title,
-				time: dateTime,
 				description: description,
 				conversation_id: result.conversation_id,
+				call_link: `https://noratutor.xyz/session/call/${callId}`,
+				call_id: callId,
 			});
-			if (result.conversation_url) {
-				if (sessionTiming === "immediate") {
-					showToast.success(
-						`Starting Call with ${availabletutors[selectedTutorIndex].name}`
-					);
-					navigate(`/session/call/${result.conversation_id}?incall=true`, {
-						state: { conversationUrl: result.conversation_url },
-					});
-				} else {
-					// For scheduled sessions, show success message instead of navigating
-					showToast.success(
-						`Session scheduled for ${scheduledDate} at ${scheduledTime}. You'll receive a reminder!`
-					);
-					// Optionally redirect to dashboard or sessions list
-					// navigate("/dashboard");
-				}
-			}
+			showToast.success(
+				`Starting Call with ${availabletutors[selectedTutorIndex].name}`
+			);
+			navigate(`/session/call/${callId}?incall=true`, {
+				state: { conversationUrl: result.conversation_url },
+			});
 		} catch (err) {
 			console.error("Failed to create session:", err);
 		} finally {
@@ -382,8 +462,13 @@ const CreateSession = () => {
 						</div>
 					</div>
 
+					<LearningMaterialsComponent
+						materials={materials}
+						setMaterials={setMaterials}
+					/>
+
 					{/* Context Input */}
-					<div className='bg-white p-6 rounded-2xl border shadow-sm'>
+					<div className='bg-white p-6 rounded-2xl border shadow-sm hidden'>
 						<div className='flex items-center gap-2 mb-4'>
 							<Label className='text-lg font-semibold text-gray-800'>
 								Learning Context
@@ -402,8 +487,8 @@ const CreateSession = () => {
 					{/* Create Button */}
 					<motion.button
 						type='button'
-						onClick={handleCreateSession}
-						disabled={isLoading || !conversationContext.trim()}
+						onClick={handleSubmitSession}
+						disabled={isLoading || !materials.textContent.trim()}
 						className='w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed'
 						whileTap={{ scale: isLoading ? 1 : 0.98 }}>
 						{sessionTiming === "immediate" ? (
@@ -421,98 +506,105 @@ const CreateSession = () => {
 				</div>
 
 				{/* Right Panel - Preview */}
-				<div className='bg-white p-6 rounded-2xl border shadow-sm h-fit'>
-					<div className='flex items-center justify-between mb-6'>
-						<h3 className='font-marlin font-bold text-xl text-gray-800'>
-							Session Preview
-						</h3>
-						<div className='flex items-center gap-2 text-sm text-gray-500'>
-							<Clock className='w-4 h-4' />
-							{sessionDuration} minutes
+				<div>
+					<div className='bg-white p-6 rounded-2xl border shadow-sm h-fit'>
+						<div className='flex items-center justify-between mb-6'>
+							<h3 className='font-marlin font-bold text-xl text-gray-800'>
+								Session Preview
+							</h3>
+							<div className='flex items-center gap-2 text-sm text-gray-500'>
+								<Clock className='w-4 h-4' />
+								{sessionDuration} minutes
+							</div>
 						</div>
-					</div>
 
-					<div className='space-y-4'>
-						{/* Video Preview */}
-						<div
-							className='relative rounded-xl overflow-hidden bg-gray-100 cursor-pointer group'
-							onMouseEnter={() => setShowControls(true)}
-							onMouseLeave={() => setShowControls(false)}>
-							<video
-								ref={videoRef}
-								loop
-								playsInline
-								controls={false}
-								src={availabletutors[selectedTutorIndex].video}
-								poster={availabletutors[selectedTutorIndex].image}
-								className='w-full aspect-video object-cover'
-							/>
-
-							{/* Play/Pause Overlay */}
+						<div className='space-y-4'>
+							{/* Video Preview */}
 							<div
-								className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-									showControls || !isPlaying
-										? "opacity-100"
-										: "opacity-0"
-								}`}>
-								<button
-									onClick={togglePlayPause}
-									type='button'
-									className='bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-200 hover:scale-110 group-hover:scale-105'>
-									{isPlaying ? (
-										<Pause className='w-6 h-6' />
-									) : (
-										<Play className='w-6 h-6 ml-1' />
-									)}
-								</button>
-							</div>
+								className='relative rounded-xl overflow-hidden bg-gray-100 cursor-pointer group'
+								onMouseEnter={() => setShowControls(true)}
+								onMouseLeave={() => setShowControls(false)}>
+								<video
+									ref={videoRef}
+									loop
+									playsInline
+									controls={false}
+									src={availabletutors[selectedTutorIndex].video}
+									poster={availabletutors[selectedTutorIndex].image}
+									className='w-full aspect-video object-cover'
+								/>
 
-							{/* Status Badge */}
-							<div className='absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm'>
-								{isPlaying ? "Preview Playing" : "Click to Preview"}
-							</div>
-						</div>
+								{/* Play/Pause Overlay */}
+								<div
+									className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+										showControls || !isPlaying
+											? "opacity-100"
+											: "opacity-0"
+									}`}>
+									<button
+										onClick={togglePlayPause}
+										type='button'
+										className='bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-200 hover:scale-110 group-hover:scale-105'>
+										{isPlaying ? (
+											<Pause className='w-6 h-6' />
+										) : (
+											<Play className='w-6 h-6 ml-1' />
+										)}
+									</button>
+								</div>
 
-						{/* Session Info */}
-						<div className='bg-gray-50 p-4 rounded-xl space-y-3'>
-							<div className='flex items-center justify-between'>
-								<h4 className='font-semibold text-gray-800'>
-									{availabletutors[selectedTutorIndex].name}
-								</h4>
-								<div className='flex items-center gap-1 text-sm text-gray-500'>
-									<div className='w-2 h-2 bg-green-500 rounded-full'></div>
-									Available Now
+								{/* Status Badge */}
+								<div className='absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm'>
+									{isPlaying ? "Preview Playing" : "Click to Preview"}
 								</div>
 							</div>
 
-							<p className='text-sm text-gray-600'>
-								{availabletutors[selectedTutorIndex].personality}
-							</p>
+							{/* Session Info */}
+							<div className='bg-gray-50 p-4 rounded-xl space-y-3'>
+								<div className='flex items-center justify-between'>
+									<h4 className='font-semibold text-gray-800'>
+										{availabletutors[selectedTutorIndex].name}
+									</h4>
+									<div className='flex items-center gap-1 text-sm text-gray-500'>
+										<div className='w-2 h-2 bg-green-500 rounded-full'></div>
+										Available Now
+									</div>
+								</div>
 
-							{/* Session Timing Display */}
-							<div className='pt-2 border-t border-gray-200'>
-								<div className='flex items-center gap-2 text-sm'>
-									{sessionTiming === "immediate" ? (
-										<>
-											<PlayCircle className='w-4 h-4 text-green-500' />
-											<span className='text-green-600 font-medium'>
-												Starting immediately
-											</span>
-										</>
-									) : (
-										<>
-											<Calendar className='w-4 h-4 text-blue-500' />
-											<span className='text-blue-600 font-medium'>
-												{scheduledDate && scheduledTime
-													? `Scheduled for ${scheduledDate} at ${scheduledTime}`
-													: "Scheduled session"}
-											</span>
-										</>
-									)}
+								<p className='text-sm text-gray-600'>
+									{availabletutors[selectedTutorIndex].personality}
+								</p>
+
+								{/* Session Timing Display */}
+								<div className='pt-2 border-t border-gray-200'>
+									<div className='flex items-center gap-2 text-sm'>
+										{sessionTiming === "immediate" ? (
+											<>
+												<PlayCircle className='w-4 h-4 text-green-500' />
+												<span className='text-green-600 font-medium'>
+													Starting immediately
+												</span>
+											</>
+										) : (
+											<>
+												<Calendar className='w-4 h-4 text-blue-500' />
+												<span className='text-blue-600 font-medium'>
+													{scheduledDate && scheduledTime
+														? `Scheduled for ${scheduledDate} at ${scheduledTime}`
+														: "Scheduled session"}
+												</span>
+											</>
+										)}
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
+					<LearningMaterialsSummary
+						materials={materials}
+						variant='minimal'
+						className='mt-4 bg-white p-6 rounded-2xl border shadow-sm h-fit hidden'
+					/>
 				</div>
 			</motion.div>
 		</motion.div>

@@ -32,7 +32,6 @@ import { Session } from "@/services/session.service";
 // 	description: "Learn fundamental calculus concepts and techniques.",
 // 	conversation_id: "ccfcf79c3fbdf49e",
 // };
-
 interface CallParams {
 	params: {
 		id?: string;
@@ -46,6 +45,8 @@ export async function getCallDetails({ params }: CallParams) {
 
 		// Extract the call ID from params
 		const callId = params.id;
+
+		// Get the current URL the user is visiting
 
 		// Handle missing call ID
 		if (!callId) {
@@ -62,6 +63,7 @@ export async function getCallDetails({ params }: CallParams) {
 
 		// If user is not authenticated, return early
 		// Don't show error toast here as the UI will handle it
+		console.log(user, user.authenticated);
 		if (!user.authenticated) {
 			return {
 				user: {
@@ -73,7 +75,7 @@ export async function getCallDetails({ params }: CallParams) {
 		}
 
 		// User is authenticated, try to get session data
-		const sessionData = (await sessionService.getSessionByConversationId(
+		const sessionData = (await sessionService.getSessionByCallId(
 			callId
 		)) as Session;
 
@@ -107,6 +109,15 @@ export async function getCallDetails({ params }: CallParams) {
 			};
 		}
 
+		///! THIS IS NOT CLEAR TO ME
+
+		// If session has a URL, redirect to it with the incall parameter
+		if (sessionData.url) {
+			// console.log(`${window.location.href}?incall=true`);
+			// window.location.href = `${window.location.href}?incall=true`;
+			// return;
+		}
+
 		// Everything is valid
 		return {
 			user: {
@@ -124,10 +135,10 @@ export async function getCallDetails({ params }: CallParams) {
 
 		// Critical error - redirect to dashboard
 		// This handles cases where the auth service itself fails
+		redirect("/");
 		throw new Response("Failed to load session", {
 			status: 500,
 			statusText: "Internal Server Error",
 		});
-		redirect("/");
 	}
 }
