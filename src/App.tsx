@@ -12,7 +12,11 @@ import CreateSession from "./pages/CreateSession";
 import SessionHistory from "./pages/SessionHistory";
 import { requireAuth } from "./scripts/auth.loaders";
 import { getCallDetails } from "./scripts/session.loader";
+// import SessionCall from "./pages/SessionCall";
 import SessionCallPage from "./pages/SessionCallPage";
+import ScheduledSession from "./pages/ScheduledSession";
+import Notes from "./pages/Notes";
+import SessionMaterials from "./pages/SessionMaterials";
 
 const router = createBrowserRouter([
 	{
@@ -50,12 +54,28 @@ const router = createBrowserRouter([
 				path: "/dashboard/session/history",
 				element: <SessionHistory />,
 			},
+			{
+				path: "/dashboard/session/scheduled",
+				element: <ScheduledSession />,
+			},
+			{
+				path: "/dashboard/session/notes",
+				element: <Notes />,
+			},
+			{
+				path: "/dashboard/session/materials",
+				element: <SessionMaterials />,
+			},
 		],
 	},
 	{
 		path: "/auth/callback",
 		element: <AuthCallback />,
 	},
+	// {
+	// 	path: "/session/call/:id",
+	// 	element: <SessionCall />,
+	// },
 	{
 		path: "/session/call/:id",
 		loader: getCallDetails,

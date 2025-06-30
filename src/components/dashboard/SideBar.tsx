@@ -2,11 +2,11 @@ import React from "react";
 import {
 	Home,
 	Video,
-	Calendar,
 	FileText,
 	MessageSquare,
 	BookOpen,
 	LogOut,
+	CalendarPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink, useNavigate } from "react-router";
@@ -56,10 +56,10 @@ const navigationData: NavigationSection[] = [
 				link: "/dashboard/session/history",
 			},
 			{
-				icon: Calendar,
-				label: "Study Schedule",
+				icon: CalendarPlus,
+				label: "Schedule Session",
 				id: "study-schedule",
-				link: "/study-schedule",
+				link: "/dashboard/session/scheduled",
 			},
 		],
 	},
@@ -70,33 +70,16 @@ const navigationData: NavigationSection[] = [
 				icon: FileText,
 				label: "Session Notes",
 				id: "session-notes",
-				link: "/session-notes",
+				link: "/dashboard/session/notes",
 			},
 			{
 				icon: BookOpen,
 				label: "Study Materials",
 				id: "study-materials",
-				link: "/study-materials",
+				link: "/dashboard/session/materials",
 			},
 		],
 	},
-	// {
-	// 	title: "PROGRESS",
-	// 	items: [
-	// 		{
-	// 			icon: BarChart3,
-	// 			label: "Learning Analytics",
-	// 			id: "analytics",
-	// 			link: "/analytics",
-	// 		},
-	// 		{
-	// 			icon: Bell,
-	// 			label: "Reminders",
-	// 			id: "reminders",
-	// 			link: "/reminders",
-	// 		},
-	// 	],
-	// },
 ];
 
 interface SideBarItemProps {

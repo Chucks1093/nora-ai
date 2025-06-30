@@ -10,7 +10,7 @@ import {
 export type SessionStatus =
 	| "COMPLETED"
 	| "IN_PROGRESS"
-	| "CANCELLED"
+	| "ENDED"
 	| "SCHEDULED"
 	| "MISSED";
 
@@ -39,7 +39,7 @@ export const SessionStatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
 					bgColor: "bg-yellow-100",
 					textColor: "text-yellow-600",
 				};
-			case "CANCELLED":
+			case "ENDED":
 				return {
 					icon: XCircle,
 					bgColor: "bg-red-100",
